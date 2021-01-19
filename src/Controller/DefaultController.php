@@ -46,7 +46,8 @@ class DefaultController extends AbstractController
     /**
      * @Route("/attestation", name="attestation", methods={"GET"})
      */
-    public function attestationChoice(Request $request): Response
+    public function attestationChoice(Request $request ,
+        AttestationHandler $attestationHandler ): Response
     {
         $userData = new UserData();
         $userForm = $this->createForm(UserForm::class, $userData);
@@ -55,36 +56,12 @@ class DefaultController extends AbstractController
         if ($userForm->isEmpty() || !$userForm->isSubmitted() || !$userForm->isValid()) {
             return $this->redirectToRoute('index');
         }
-
-        $attestationCommand = new AttestationCommand();
-        $attestationCommand->userData = $userData;
-        $attestationForm = $this->createForm(AttestationForm::class, $attestationCommand, [
-            'action' => $this->generateUrl('generate'),
-        ]);
-        $attestationForm->handleRequest($request);
-
-        return $this->render('generate_attestation.html.twig', [
-            'user_data' => $userData->normalize(),
-            'attestation_form' => $attestationForm->createView(),
-        ]);
+      else{
+        //generate here directly
+//          return new Response('Your attestation has been generated.');        
+            $attestationHandler->generate($userForm->getData());
+            return new Response('Your attestation has been generated.');        
+      }      
     }
 
-    /**
-     * @Route("/generate", name="generate", methods={"POST"})
-     */
-    public function generateAttestation(
-        Request $request,
-        AttestationHandler $attestationHandler
-    ): Response {
-        $attestationCommand = new AttestationCommand();
-        $attestationForm = $this->createForm(AttestationForm::class, $attestationCommand);
-        $attestationForm->handleRequest($request);
-
-        if ($attestationForm->isSubmitted() && $attestationForm->isValid()) {
-            $attestationHandler->generate($attestationCommand);
-            return new Response('Your attestation has been generated.');
-        }
-
-        return $this->redirectToRoute('index');
-    }
 }

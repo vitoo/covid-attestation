@@ -43,7 +43,22 @@ class UserData
      * @Assert\Length(max=50)
      */
     public ?string $city;
-
+  
+   /**
+     * @Assert\NotBlank
+     */
+    public array $justifications; 
+    
+    /**
+     * @Assert\NotBlank
+     */
+    public \DateTime $date;
+  
+    public function __construct()
+    {
+        $this->date = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
+    }
+  
     public function normalize(): array
     {
         return [
@@ -54,6 +69,7 @@ class UserData
             'street' => $this->street,
             'postalCode' => $this->postalCode,
             'city' => $this->city,
+            'justifications' => $this->justifications,
         ];
     }
 }

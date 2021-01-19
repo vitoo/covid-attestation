@@ -17,7 +17,7 @@ class AttestationHandler
         $this->justifications = $justifications;
     }
 
-    public function generate(AttestationCommand $attestationCommand): void
+    public function generate(UserData $userData): void
     {
         date_default_timezone_set('Europe/Paris');
 
@@ -39,21 +39,21 @@ class AttestationHandler
         $pdf->Ln();
 
         $pdf->SetFont('helvetica', '', 11);
-        $txt = sprintf("Mme/M. : %s %s", $attestationCommand->userData->firstname,
-            $attestationCommand->userData->lastname);
+        $txt = sprintf("Mme/M. : %s %s", $userData->firstname,
+            $userData->lastname);
         $pdf->Write(0, $txt, '', 0, 'L', true);
         $pdf->Ln(1);
 
-        $txt = sprintf("Né(e) le : %s à : %s", $attestationCommand->userData->birthday,
-            $attestationCommand->userData->birthcity);
+        $txt = sprintf("Né(e) le : %s à : %s", $userData->birthday,
+            $userData->birthcity);
         $pdf->Write(0, $txt, '', 0, 'L', true);
         $pdf->Ln(1);
 
         $txt = sprintf(
             "Demeurant : %s %s %s",
-            $attestationCommand->userData->street,
-            $attestationCommand->userData->postalCode,
-            $attestationCommand->userData->city
+            $userData->street,
+            $userData->postalCode,
+            $userData->city
         );
         $pdf->Write(0, $txt, '', 0, 'L', true);
 
@@ -71,29 +71,29 @@ class AttestationHandler
         $pdf->Ln();
 
         foreach ($this->justifications->justificationsKeys() as $justificationsKey) {
-            $this->writeJustification($justificationsKey, $attestationCommand, $pdf);
+            $this->writeJustification($justificationsKey, $userData, $pdf);
         }
 
         $pdf->setCellPaddings($left = 0, $top = '', $right = '', $bottom = '');
 
         $pdf->SetY(265);
-        $txt = sprintf("Fait à : %s", $attestationCommand->userData->city);
+        $txt = sprintf("Fait à : %s", $userData->city);
         $pdf->Write(0, $txt, '', 0, 'L', true);
 
-        $txt = sprintf("Le : %s", $attestationCommand->date->format('d/m/Y à H:i'));
+        $txt = sprintf("Le : %s", $userData->date->format('d/m/Y à H:i'));
         $pdf->Write(0, $txt, '', 0, 'L', true);
         $txt = "(Date et heure de début de sortie à mentionner obligatoirement)";
         $pdf->Write(0, $txt, '', 0, 'L', true);
 
         $pdf->SetY(238);
         $pdf->setCellPaddings($left = 0, $top = 0, $right = 0, $bottom = 0);
-        $qrcode = $this->attestationQRCode->fromCommand($attestationCommand);
+        $qrcode = $this->attestationQRCode->fromCommand($userData);
         $img = '<img src="@' . preg_replace('#^data:image/[^;]+;base64,#', '', $qrcode) . '" width="150">';
         $pdf->writeHTML($img, true, false, true, false, 'R');
 
         $pdf->AddPage();
 
-        $qrcode = $this->attestationQRCode->fromCommand($attestationCommand);
+        $qrcode = $this->attestationQRCode->fromCommand($userData);
         $img = '<img src="@' . preg_replace('#^data:image/[^;]+;base64,#', '',
                 $qrcode) . '" width="400">';
         $pdf->writeHTML($img, true, false, true, false, 'L');
@@ -122,10 +122,10 @@ class AttestationHandler
         return $pdf;
     }
 
-    private function writeJustification(string $justification, AttestationCommand $attestationCommand, TCPDF $pdf)
+    private function writeJustification(string $justification, UserData $userData, TCPDF $pdf)
     {
         $imagePath = realpath(__DIR__ . '/../../public/images/unchecked.jpg');
-        if (in_array($justification, $attestationCommand->justifications)) {
+        if (in_array($justification, $userData->justifications)) {
             $imagePath = realpath(__DIR__ . '/../../public/images/checked.jpg');
         }
         $pdf->Image($imagePath, $pdf->GetX(), $pdf->GetY(), 5, 5, 'JPG', '', 'L', true);

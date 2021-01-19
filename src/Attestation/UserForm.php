@@ -7,11 +7,20 @@ namespace Jmleroux\CovidAttestation\Attestation;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class UserForm extends AbstractType
 {
+  
+  private Justifications $justifications;
+
+    public function __construct(Justifications $justifications)
+    {
+        $this->justifications = $justifications;
+    }
+  
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -36,8 +45,14 @@ class UserForm extends AbstractType
             ])
             ->add('city', TextType::class, [
                 'label' => "Ville",
+            ])           
+           ->add('justifications', ChoiceType::class, [
+                'multiple' => true,
+                'expanded' => true,
+                'label' => 'Motif de sortie',
+                'choices' => $this->justifications->getChoices(),
             ])
-            ->add('save', SubmitType::class, [
+           ->add('save', SubmitType::class, [
                 'label' => "Générer votre URL personnalisée",
             ]);
     }

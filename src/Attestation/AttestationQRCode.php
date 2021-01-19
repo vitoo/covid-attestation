@@ -14,11 +14,11 @@ class AttestationQRCode
         $this->twig = $twig;
     }
 
-    public function fromCommand(AttestationCommand $attestationCommand): string
+    public function fromCommand(UserData  $attestationCommand): string
     {
         return (new QRCode)->render(
             $this->twig->render('attestation-text.html.twig', [
-                'user_data' => $attestationCommand->userData->normalize(),
+                'user_data' => $attestationCommand->normalize(),
                 'justifications' => $attestationCommand->justifications,
                 'date' => $attestationCommand->date,
             ])
